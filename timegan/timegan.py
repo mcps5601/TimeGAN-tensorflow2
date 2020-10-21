@@ -1,1 +1,1 @@
-from model_utils import extract_time, rnn_cell, random_generator, batch_generator, MinMaxScaler
+from model_utils import extract_time, random_generator, batch_generator, MinMaxScaler
