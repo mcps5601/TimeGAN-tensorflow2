@@ -114,3 +114,21 @@ def batch_generator(data, time, batch_size):
     T_mb = list(time[i] for i in train_idx)
 
     return X_mb, T_mb
+
+
+def MinMaxScaler(data):
+    """Min_Max Normalizer.
+    Args:
+        data: raw_data
+    Return:
+        norm_data: normalized_data
+        min_val: minimum values (for renormalization)
+        max_val: maximum values (for renormalization)
+    """
+    min_val = np.min(np.min(data, axis=0), axis=0)
+    data = data - min_val
+
+    max_val = np.max(np.max(data, axis=0), axis=0)
+    norm_data = data / (max_val + 1e-7)
+
+    return norm_data, min_val, max_val
