@@ -1,9 +1,9 @@
 import tensorflow as tf
 import numpy as np
-from layer_norm_module import lstmLNCell
+from modules.layer_norm_module import LSTMLNCell
 
 
-def train_test_divida(data_x, data_x_hat, data_t, data_t_hat, train_rate = 0.8):
+def train_test_divide(data_x, data_x_hat, data_t, data_t_hat, train_rate = 0.8):
     """Divide train and test data for both original and synthetic data.
     Args:
         data_x: original_data

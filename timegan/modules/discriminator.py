@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
-from model_utils import rnn_cell
+from modules.model_utils import rnn_cell
 
-class discriminator(tf.keras.Model):
+class Discriminator(tf.keras.Model):
     def __init__(self, args):
         super().__init__()
         self.module_name = args.module_name
@@ -17,9 +17,9 @@ class discriminator(tf.keras.Model):
         # self.rnn = tf.keras.models.Sequential([
         #     tf.keras.layers.RNN(self.rnn_cell) for _ in range(self.num_layers)
         # ])
-        self.linear = tf.keras.layers.Dense(1, activation=tf.nn.sigmoid)
+        self.linear = tf.keras.layers.Dense(1, activation=None)
 
-    def call(self, H, T)
+    def call(self, H, T):
         d_output, d_last_state = self.rnn(H)
         Y_hat = self.linear(d_output)
         return Y_hat

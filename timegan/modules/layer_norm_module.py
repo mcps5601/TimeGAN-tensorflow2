@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-class lstmLNCell(tf.keras.layers.Layer):
+class LSTMLNCell(tf.keras.layers.Layer):
     def __init__(self, units, activation='tanh', **kargs):
         super().__init__(**kargs)
         self.state_size = units
