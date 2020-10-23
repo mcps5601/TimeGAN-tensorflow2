@@ -20,7 +20,7 @@ class Supervisor(tf.keras.Model):
         # ])
         self.linear = tf.keras.layers.Dense(self.hidden_dim, activation=tf.nn.sigmoid)
 
-    def call(self, H, T):
+    def call(self, H):
         s_output, s_last_state = self.rnn(H)
         S = self.linear(s_output)
         return S

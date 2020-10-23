@@ -20,7 +20,7 @@ class Generator(tf.keras.Model):
         # ])
         self.linear = tf.keras.layers.Dense(self.hidden_dim, activation=tf.nn.sigmoid)
 
-    def call(self, Z, T):
+    def call(self, Z):
         e_output, e_last_state = self.rnn(Z)
         E = self.linear(e_output)
         return E

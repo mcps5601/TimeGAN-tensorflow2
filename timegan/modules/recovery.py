@@ -20,7 +20,7 @@ class Recovery(tf.keras.Model):
         # ])
         self.linear = tf.keras.layers.Dense(self.feature_dim, activation=tf.nn.sigmoid)
 
-    def call(self, H, T):
+    def call(self, H):
         r_output, r_last_state = self.rnn(H)
         X_tilde = self.linear(r_output)
         return X_tilde

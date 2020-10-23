@@ -19,7 +19,7 @@ class Embedder(tf.keras.Model):
         # ])
         self.linear = tf.keras.layers.Dense(self.hidden_dim, activation=tf.nn.sigmoid)
 
-    def call(self, X, T):
+    def call(self, X):
         output, last_state = self.rnn(X)
         H = self.linear(output)
         return H

@@ -19,7 +19,7 @@ class Discriminator(tf.keras.Model):
         # ])
         self.linear = tf.keras.layers.Dense(1, activation=None)
 
-    def call(self, H, T):
+    def call(self, H):
         d_output, d_last_state = self.rnn(H)
         Y_hat = self.linear(d_output)
         return Y_hat
