@@ -22,12 +22,10 @@ class TimeGAN(tf.keras.Model):
             E_loss0 = 10 * tf.math.sqrt(E_loss_T0)
 
         grads = tape.gradient(E_loss0, model.trainable_weights)
-        optimizer.apply_gradients(zip(grads, model.trainable_weights))
+        optimizer.apply_gradients(zip(grads, self.embedder.trainable_weights + self.recovery.trainable_weights))
 
         return E_loss_T0
 
-    
-        
     def call(self, X, Z, obj, gamma=1):
 
 
