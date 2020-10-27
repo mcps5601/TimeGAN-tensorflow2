@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from modules.layer_norm_module import LSTMLNCell
+from .layer_norm_module import LSTMLNCell
 
 
 def train_test_divide(data_x, data_x_hat, data_t, data_t_hat, train_rate = 0.8):
@@ -75,6 +75,7 @@ def rnn_cell(module_name, hidden_dim):
         rnn_cell = lstmLNCell(
                     units=hidden_dim,
                     activation='tanh')
+    return rnn_cell
 
 
 def random_generator(batch_size, z_dim, T_mb, max_seq_len):
