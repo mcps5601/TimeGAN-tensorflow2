@@ -48,12 +48,15 @@ class TimeGAN(tf.keras.Model):
 
         return tf.math.reduce_mean(G_loss_S)
 
-    # def discriminator_forward(self, X, Z, obj, gamma=1):
-    #     with tf.GradientTape() as tape:
-    #         H = self.embedder(X, trianing=True)
-    #         H_hat = self.supervisor(H, training=True)
-
-
+    def discriminator_forward(self, X, Z, obj, gamma=1):
+        with tf.GradientTape() as tape:
+            H = self.embedder(X, trianing=True)
+            H_hat = self.supervisor(H, training=True)
+            Y_fake = self.discriminator(H_hat)
+            Y_real = self.discriminator(H)
+            Y_fake_e = self.discriminator(E_hat)
+            D_loss_real = tf.nn.sigmoid_cross_entropy_with_logits(tf.ones_like(Y_real), Y_real)
+            D_loss_fake = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(Y_fake), Y_fake)
 
 
 
