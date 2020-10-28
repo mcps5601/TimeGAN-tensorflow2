@@ -151,7 +151,9 @@ class TimeGAN(tf.keras.Model):
         Return:
             generated_data: synthetic time-series data
         """
-        generated_data_curr = self.generator(Z)
+        E_hat = self.generator(Z)
+        H_hat = self.supervisor(E_hat)
+        generated_data_curr = self.recovery(H_hat)
         generated_data = list()
 
         for i in range(ori_data_num):
@@ -165,7 +167,7 @@ class TimeGAN(tf.keras.Model):
         return generated_data
 
     # Direct inference (testing)
-    def generator_inference(self, z_dim, ori_data, trained_model):
+    def generator_inference(self, z_dim, ori_data, model_dir):
         """
         Args:
             Z: input random noises
@@ -183,9 +185,15 @@ class TimeGAN(tf.keras.Model):
         if z_dim == -1:  # choose z_dim for the dimension of noises
             z_dim = dim
         Z = random_generator(no, z_dim, ori_time, max_seq_len)
-        
-        self.generator = tf.load(*)
-        generated_data_curr = self.generator(Z)
+
+        # Load models
+        self.recovery.load_weights(model_dir)
+        self.supervisor.load_weights(model_dir)
+        self.generator.load_weights(model_dir)
+
+        E_hat = self.generator(Z)
+        H_hat = self.supervisor(E_hat)
+        generated_data_curr = self.recovery(H_hat)
         generated_data = list()
 
         for i in range(ori_data_num):
@@ -259,7 +267,7 @@ def train_timegan(ori_data, mode, args):
 
         # 3. Joint Training
         print('Start Joint Training')
-        for itt in range(args.iterations):
+        for itt in range(5):
             # Generator training (two times as discriminator training)
             for g_more in range(2):
                 X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
@@ -309,7 +317,7 @@ def train_timegan(ori_data, mode, args):
         print('Finish Joint Training')
     
         ## Synthetic data generation
-        Z_mb = random_generator(no, z_dim, ori_time, max_seq_len)
+        Z_mb = random_generator(args.batch_size, args.z_dim, T_mb, args.max_seq_len)
         generated_data = generate(Z_mb, no, max_val, min_val)
         
         return generated_data
