@@ -20,6 +20,7 @@ class TimeGAN(tf.keras.Model):
         self.supervisor = Supervisor(args)
         self.discriminator = Discriminator(args)
 
+    # E0_solver
     def recovery_forward(self, X, optimizer):
         # initial_hidden = self.embedder.initialize_hidden_state()
         with tf.GradientTape() as tape:
@@ -34,6 +35,7 @@ class TimeGAN(tf.keras.Model):
 
         return tf.math.reduce_mean(E_loss_T0)
 
+    # GS_solver
     def supervisor_forward(self, X, Z, optimizer):
         with tf.GradientTape() as tape:
             H = self.embedder(X, training=True)
@@ -47,23 +49,56 @@ class TimeGAN(tf.keras.Model):
 
         return tf.math.reduce_mean(G_loss_S)
 
-    def discriminator_forward(self, X, Z, obj, gamma=1):
+    # D_solver + G_solver
+    def adversarial_forward(self, X, Z, obj, gamma=1, train_G=False, train_D=False):
         with tf.GradientTape() as tape:
-            H = self.embedder(X, trianing=True)
-            H_hat = self.supervisor(H, training=True)
-            Y_fake = self.discriminator(H_hat)
-            Y_real = self.discriminator(H)
-            Y_fake_e = self.discriminator(E_hat)
-            D_loss_real = tf.nn.sigmoid_cross_entropy_with_logits(tf.ones_like(Y_real), Y_real)
-            D_loss_fake = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(Y_fake), Y_fake)
-            D_loss_fake_e = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(Y_fake_e), Y_fake_e)
-            D_loss = D_loss_real + D_loss_fake + gamma * D_loss_fake_e
+            H = self.embedder(X)
+            E_hat = self.generator(Z, training=True)
 
-        var_list = self.discriminator.trainable_weights
-        grads = tape.gradient(D_loss ,var_list)
-        optimizer.apply_gradients(zip(grads, var_list))
+            # Supervisor & Recovery
+            H_hat_supervise = self.supervisor(H, training=True)
+            H_hat = self.supervisor(E_hat, training=True)
+            X_hat = self.recovery(H_hat)
 
-        return tf.math.reduce_mean(D_loss)
+            # Discriminator
+            Y_fake = self.discriminator(H_hat, training=True)
+            Y_real = self.discriminator(H, training=True)
+            Y_fake_e = self.discriminator(E_hat, training=True)
+
+            if train_G:
+                # Generator loss
+                G_loss_U = tf.nn.sigmoid_cross_entropy_with_logits(tf.ones_like(Y_fake), Y_fake)
+                G_loss_U_e = tf.nn.sigmoid_cross_entropy_with_logits(tf.ones_like(Y_fake_e), Y_fake_e)
+                G_loss_S = tf.keras.losses.mean_squared_error(H[:, 1:, :], H_hat_supervise[:, :-1, :])
+                G_loss_V1 = tf.math.reduce_mean(tf.math.abs(tf.math.sqrt(tf.nn.moments(X_hat,[0])[1] + 1e-6)
+                                                - tf.math.sqrt(tf.nn.moments(X,[0])[1] + 1e-6)))
+                G_loss_V2 = tf.math.reduce_mean(tf.math.abs((tf.nn.moments(X_hat,[0])[0])
+                                                - (tf.nn.moments(X,[0])[0])))
+                G_loss_V = G_loss_V1 + G_loss_V2
+                ## Sum of all G_losses
+                G_loss = G_loss_U + gamma * G_loss_U_e + 100 * tf.math.sqrt(G_loss_S) + 100 * G_loss_V
+
+            if train_D:
+                # train D+G
+                # Discriminator loss
+                D_loss_real = tf.nn.sigmoid_cross_entropy_with_logits(tf.ones_like(Y_real), Y_real)
+                D_loss_fake = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(Y_fake), Y_fake)
+                D_loss_fake_e = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(Y_fake_e), Y_fake_e)
+                D_loss = D_loss_real + D_loss_fake + gamma * D_loss_fake_e
+
+        if train_G:
+            GS_var_list = self.generator.trainable_weights + self.supervisor.trainable_weights
+            GS_grads = tape.gradient(G_loss, GS_var_list)
+            optimizer.apply_gradients(zip(GS_grads, GS_var_list))
+            
+            return G_loss_U, G_loss_S, G_loss_V
+
+        elif train_D:
+            D_var_list = self.discriminator.trainable_weights
+            D_grads = tape.gradient(D_loss, D_var_list)
+            optimizer.apply_gradients(zip(grads, D_var_list))
+
+            return tf.math.reduce_mean(D_loss)
 
 
 def train_timegan(ori_data, mode, args):
@@ -103,6 +138,7 @@ def train_timegan(ori_data, mode, args):
                     tf.summary.scalar('Embedding_loss', np.round(np.sqrt(step_e_loss),4), step=itt)
 
         print('Finish Embedding Network Training')
+
         # 2. Training only with supervised loss
         print('Start Training with Supervised Loss Only')
         for itt in range(args.iterations):
@@ -117,5 +153,16 @@ def train_timegan(ori_data, mode, args):
                 print('step: '+ str(itt)  + '/' + str(args.iterations) +', s_loss: ' + str(np.round(np.sqrt(step_g_loss_s),4)))
         
         print('Finish Training with Supervised Loss Only')
+
+        # 3. Joint Training
+        print('Start Joint Training')
+        for itt in range(args.iterations):
+            # Generator training (twice more than discriminator training)
+            for g_more in range(2):
+                X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
+                Z_mb = random_generator(args.batch_size, args.z_dim, T_mb, args.max_seq_len)
+                step_g_loss_u = 
+
+
     
     exit()
