@@ -141,11 +141,12 @@ class TimeGAN(tf.keras.Model):
         return E_loss
 
     # Inference
-    def generate(self, Z, ori_data_num, max_val, min_val):
+    def generate(self, Z, ori_data_num, ori_time, max_val, min_val):
         """
         Args:
             Z: input random noises
             ori_data_num: the first dimension of ori_data.shape
+            ori_time: timesteps of original data
             max_val: the maximum value of MinMaxScaler(ori_data)
             min_val: the minimum value of MinMaxScaler(ori_data)
         Return:
@@ -154,6 +155,7 @@ class TimeGAN(tf.keras.Model):
         E_hat = self.generator(Z)
         H_hat = self.supervisor(E_hat)
         generated_data_curr = self.recovery(H_hat)
+        generated_data_curr = generated_data_curr.numpy()
         generated_data = list()
 
         for i in range(ori_data_num):
@@ -267,7 +269,7 @@ def train_timegan(ori_data, mode, args):
 
         # 3. Joint Training
         print('Start Joint Training')
-        for itt in range(5):
+        for itt in range(1):
             # Generator training (two times as discriminator training)
             for g_more in range(2):
                 X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
@@ -317,7 +319,10 @@ def train_timegan(ori_data, mode, args):
         print('Finish Joint Training')
     
         ## Synthetic data generation
-        Z_mb = random_generator(args.batch_size, args.z_dim, T_mb, args.max_seq_len)
-        generated_data = generate(Z_mb, no, max_val, min_val)
+        Z_mb = random_generator(no, args.z_dim, ori_time, args.max_seq_len)
+        Z_mb = tf.convert_to_tensor(Z_mb, dtype=tf.float32)
+        generated_data = model.generate(Z_mb, no, ori_time, max_val, min_val)
         
         return generated_data
+
+    exit()
