@@ -140,6 +140,64 @@ class TimeGAN(tf.keras.Model):
 
         return E_loss
 
+    # Inference
+    def generate(self, Z, ori_data_num, max_val, min_val):
+        """
+        Args:
+            Z: input random noises
+            ori_data_num: the first dimension of ori_data.shape
+            max_val: the maximum value of MinMaxScaler(ori_data)
+            min_val: the minimum value of MinMaxScaler(ori_data)
+        Return:
+            generated_data: synthetic time-series data
+        """
+        generated_data_curr = self.generator(Z)
+        generated_data = list()
+
+        for i in range(ori_data_num):
+            temp = generated_data_curr[i, :ori_time[i], :]
+            generated_data.append(temp)
+        
+        # Renormalization
+        generated_data = generated_data * max_val
+        generated_data = generated_data + min_val
+        
+        return generated_data
+
+    # Direct inference (testing)
+    def generator_inference(self, z_dim, ori_data, trained_model):
+        """
+        Args:
+            Z: input random noises
+            ori_data: the original dataset (for information extraction)
+            trained_model: trained Generator
+        Return:
+            generated_data: synthetic time-series data
+        """
+        no, seq_len, dim = np.asarray(ori_data).shape
+        ori_time, max_seq_len = extract_time(ori_data)
+        # Normalization
+        _, min_val, max_val = MinMaxScaler(ori_data)
+
+
+        if z_dim == -1:  # choose z_dim for the dimension of noises
+            z_dim = dim
+        Z = random_generator(no, z_dim, ori_time, max_seq_len)
+        
+        self.generator = tf.load(*)
+        generated_data_curr = self.generator(Z)
+        generated_data = list()
+
+        for i in range(ori_data_num):
+            temp = generated_data_curr[i, :ori_time[i], :]
+            generated_data.append(temp)
+        
+        # Renormalization
+        generated_data = generated_data * max_val
+        generated_data = generated_data + min_val
+        
+        return generated_data
+
 
 def train_timegan(ori_data, mode, args):
     no, seq_len, dim = np.asarray(ori_data).shape
@@ -249,4 +307,9 @@ def train_timegan(ori_data, mode, args):
                     tf.summary.scalar('Joint/Embedding',
                                       np.round(step_e_loss_t0, 4), step=itt)        
         print('Finish Joint Training')
-        exit()
+    
+        ## Synthetic data generation
+        Z_mb = random_generator(no, z_dim, ori_time, max_seq_len)
+        generated_data = generate(Z_mb, no, max_val, min_val)
+        
+        return generated_data
