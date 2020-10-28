@@ -151,6 +151,15 @@ def main(args):
 
     return feat_pred, step_ahead_pred, reidentification_score
 
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 ###
 if __name__ == '__main__':
@@ -159,7 +168,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timegan-test',
+        default='dpsgd-test',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -206,6 +215,14 @@ if __name__ == '__main__':
         '--epsilon',
         default=1e-8,
         type=float)
+    parser.add_argument(
+        '--optimizer',
+        default='adam',
+        type=str)
+    parser.add_argument(
+        '--use_dpsgd',
+        default=False,
+        type=str2bool)
     parser.add_argument(
         '--batch_size',
         default=128,

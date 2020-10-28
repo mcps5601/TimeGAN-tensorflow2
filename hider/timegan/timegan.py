@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow.compat.v1 as tf1
 import numpy as np
 from .modules.embedder import Embedder
 from .modules.recovery import Recovery
@@ -19,6 +20,7 @@ class TimeGAN(tf.keras.Model):
         self.supervisor = Supervisor(args)
         self.discriminator = Discriminator(args)
         self.mse = tf.keras.losses.MeanSquaredError()
+        self.use_dpsgd = args.use_dpsgd
 
     # E0_solver
     def recovery_forward(self, X, optimizer):
@@ -50,7 +52,7 @@ class TimeGAN(tf.keras.Model):
         return G_loss_S
 
     # D_solver + G_solver
-    def adversarial_forward(self, X, Z, optimizer, gamma=1, train_G=False, train_D=False):
+    def adversarial_forward(self, X, Z, optimizer=None, gamma=1, train_G=False, train_D=False):
         with tf.GradientTape() as tape:
             H = self.embedder(X)
             E_hat = self.generator(Z, training=True)
@@ -221,13 +223,24 @@ def train_timegan(ori_data, mode, args):
 
     if mode == 'train':
         model = TimeGAN(args)
-        # Set optimizers
-        E0_solver = tf.keras.optimizers.Adam(epsilon=args.epsilon)
-        GS_solver = tf.keras.optimizers.Adam(epsilon=args.epsilon)
-        G_solver = tf.keras.optimizers.Adam(epsilon=args.epsilon)
-        E_solver = tf.keras.optimizers.Adam(epsilon=args.epsilon)
-        D_solver = tf.keras.optimizers.Adam(epsilon=args.epsilon)
-        
+
+        # Set up optimizers
+        if args.optimizer == 'adam':
+            optimizer = tf.keras.optimizers.Adam(epsilon=args.epsilon)
+        if args.use_dpsgd:
+            from tensorflow_privacy.privacy.analysis.rdp_accountant import compute_rdp
+            from tensorflow_privacy.privacy.analysis.rdp_accountant import get_privacy_spent
+            from tensorflow_privacy.privacy.optimizers.dp_optimizer import DPGradientDescentGaussianOptimizer
+
+            D_optimizer = DPGradientDescentGaussianOptimizer(
+                l2_norm_clip=1.0,
+                noise_multiplier=0.1,
+                num_microbatches=args.batch_size,
+                learning_rate=0.15
+            )
+        else:
+            D_optimizer = optimizer
+
         print('Set up Tensorboard')
         current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         train_log_dir = os.path.join('tensorboard', current_time + '-' + args.exp_name)
@@ -238,7 +251,7 @@ def train_timegan(ori_data, mode, args):
         for itt in range(1):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
             X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
-            step_e_loss = model.recovery_forward(X_mb, E0_solver)
+            step_e_loss = model.recovery_forward(X_mb, optimizer)
             if itt % 10 == 0:
                 print('step: '+ str(itt) + '/' + str(args.iterations) +
                       ', e_loss: ' + str(np.round(np.sqrt(step_e_loss),4)))
@@ -257,7 +270,7 @@ def train_timegan(ori_data, mode, args):
             X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
             Z_mb = tf.convert_to_tensor(Z_mb, dtype=tf.float32)
 
-            step_g_loss_s = model.supervisor_forward(X_mb, Z_mb, GS_solver)
+            step_g_loss_s = model.supervisor_forward(X_mb, Z_mb, optimizer)
             if itt % 10 == 0:
                 print('step: '+ str(itt)  + '/' + str(args.iterations) +', s_loss: '
                               + str(np.round(np.sqrt(step_g_loss_s),4)))
@@ -269,7 +282,7 @@ def train_timegan(ori_data, mode, args):
 
         # 3. Joint Training
         print('Start Joint Training')
-        for itt in range(1):
+        for itt in range(1000):
             # Generator training (two times as discriminator training)
             for g_more in range(2):
                 X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
@@ -279,10 +292,10 @@ def train_timegan(ori_data, mode, args):
                 Z_mb = tf.convert_to_tensor(Z_mb, dtype=tf.float32)
 
                 step_g_loss_u, step_g_loss_s, step_g_loss_v = model.adversarial_forward(X_mb, Z_mb,
-                                                                                  G_solver,
+                                                                                  optimizer,
                                                                                   train_G=True,
                                                                                   train_D=False)
-                step_e_loss_t0 = model.embedding_forward_joint(X_mb, E_solver)
+                step_e_loss_t0 = model.embedding_forward_joint(X_mb, optimizer)
 
             # Discriminator training
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
@@ -291,9 +304,9 @@ def train_timegan(ori_data, mode, args):
             X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
             Z_mb = tf.convert_to_tensor(Z_mb, dtype=tf.float32)
 
-            check_d_loss = model.adversarial_forward(X_mb, Z_mb, D_solver, train_G=False, train_D=False)
+            check_d_loss = model.adversarial_forward(X_mb, Z_mb, train_G=False, train_D=False)
             if (check_d_loss > 0.15): 
-                step_d_loss = model.adversarial_forward(X_mb, Z_mb, D_solver, train_G=False, train_D=True)
+                step_d_loss = model.adversarial_forward(X_mb, Z_mb, D_optimizer, train_G=False, train_D=True)
             else:
                 step_d_loss = check_d_loss
 
@@ -324,5 +337,3 @@ def train_timegan(ori_data, mode, args):
         generated_data = model.generate(Z_mb, no, ori_time, max_val, min_val)
         
         return generated_data
-
-    exit()
