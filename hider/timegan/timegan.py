@@ -50,7 +50,7 @@ class TimeGAN(tf.keras.Model):
         return tf.math.reduce_mean(G_loss_S)
 
     # D_solver + G_solver
-    def adversarial_forward(self, X, Z, obj, gamma=1, train_G=False, train_D=False):
+    def adversarial_forward(self, X, Z, optimizer, gamma=1, train_G=False, train_D=False):
         with tf.GradientTape() as tape:
             H = self.embedder(X)
             E_hat = self.generator(Z, training=True)
@@ -78,8 +78,7 @@ class TimeGAN(tf.keras.Model):
                 ## Sum of all G_losses
                 G_loss = G_loss_U + gamma * G_loss_U_e + 100 * tf.math.sqrt(G_loss_S) + 100 * G_loss_V
 
-            if train_D:
-                # train D+G
+            elif not train_G:
                 # Discriminator loss
                 D_loss_real = tf.nn.sigmoid_cross_entropy_with_logits(tf.ones_like(Y_real), Y_real)
                 D_loss_fake = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(Y_fake), Y_fake)
@@ -100,6 +99,29 @@ class TimeGAN(tf.keras.Model):
 
             return tf.math.reduce_mean(D_loss)
 
+        elif not train_D:
+            print("Checking if D_loss > 0.15")
+            return tf.math.reduce_mean(D_loss)
+
+    # E_solver
+    def embedding_forward_joint(self, X, optimizer):
+        with tf.GradientTape() as tape:
+            H = self.embedder(X, training=True)
+            X_tilde = self.recovery(H, training=True)
+            E_loss_T0 = tf.keras.losses.mean_squared_error(X, X_tilde)
+            E_loss0 = 10 * tf.math.sqrt(E_loss_T0)
+
+            H_hat_supervise = self.supervisor(H)
+            G_loss_S = tf.keras.losses.mean_squared_error(H[:, 1:, :], H_hat_supervise[:, :-1, :])
+         
+            E_loss = E_loss0 + 0.1 * G_loss_S
+        
+        var_list = self.embedder.trainable_weights + self.recovery.trainable_weights
+        grads = tape.gradient(E_loss, var_list)
+        optimizer.apply_gradients(zip(grads, var_list))
+
+        return tf.math.reduce_mean(E_loss)     
+
 
 def train_timegan(ori_data, mode, args):
     no, seq_len, dim = np.asarray(ori_data).shape
@@ -116,9 +138,9 @@ def train_timegan(ori_data, mode, args):
         # Set optimizers
         E0_solver = tf.keras.optimizers.Adam(epsilon=args.epsilon)
         GS_solver = tf.keras.optimizers.Adam(epsilon=args.epsilon)
-
-        recovery_optimizer = tf.keras.optimizers.Adam(epsilon=args.epsilon)
-
+        G_solver = tf.keras.optimizers.Adam(epsilon=args.epsilon)
+        E_solver = tf.keras.optimizers.Adam(epsilon=args.epsilon)
+        
         print('Set up Tensorboard')
         current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         train_log_dir = os.path.join('tensorboard', current_time + '-' + args.exp_name)
@@ -157,11 +179,20 @@ def train_timegan(ori_data, mode, args):
         # 3. Joint Training
         print('Start Joint Training')
         for itt in range(args.iterations):
-            # Generator training (twice more than discriminator training)
+            # Generator training (two times as discriminator training)
             for g_more in range(2):
                 X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
                 Z_mb = random_generator(args.batch_size, args.z_dim, T_mb, args.max_seq_len)
-                step_g_loss_u = 
+                step_g_loss_u, step_g_loss_s, step_g_loss_v = adversarial_forward(X_mb, Z_mb,
+                                                                                  G_solver,
+                                                                                  train_G=True,
+                                                                                  train_D=False)
+                step_e_loss_t0 = embedding_forward_joint(X_mb, E_solver)
+
+            # Discriminator training
+            X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
+            Z_mb = random_generator(args.batch_size, args.z_dim, T_mb, args.max_seq_len)
+            check_d_loss = adversarial_forward(X_mb, Z_mb, G_solver, train_G=False, train_D=True)
 
 
     
