@@ -42,7 +42,6 @@ class TimeGAN(tf.keras.Model):
             G_loss_S = tf.keras.losses.mean_squared_error(H[:, 1:, :], H_hat_supervise[:, :-1, :])
         
         var_list = self.generator.trainable_weights + self.supervisor.trainable_weights
-        #var_list = self.generator.trainable_weights
         grads = tape.gradient(G_loss_S, var_list)
         optimizer.apply_gradients(zip(grads, var_list))
 
@@ -57,9 +56,14 @@ class TimeGAN(tf.keras.Model):
             Y_fake_e = self.discriminator(E_hat)
             D_loss_real = tf.nn.sigmoid_cross_entropy_with_logits(tf.ones_like(Y_real), Y_real)
             D_loss_fake = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(Y_fake), Y_fake)
+            D_loss_fake_e = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(Y_fake_e), Y_fake_e)
+            D_loss = D_loss_real + D_loss_fake + gamma * D_loss_fake_e
 
+        var_list = self.discriminator.trainable_weights
+        grads = tape.gradient(D_loss ,var_list)
+        optimizer.apply_gradients(zip(grads, var_list))
 
-
+        return tf.math.reduce_mean(D_loss)
 
 
 def train_timegan(ori_data, mode, args):
@@ -82,7 +86,7 @@ def train_timegan(ori_data, mode, args):
 
         print('Set up Tensorboard')
         current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        train_log_dir = os.path.join('../tensorboard', current_time, args.exp_name)
+        train_log_dir = os.path.join('tensorboard', current_time + '-' + args.exp_name)
         train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 
         # 1. Embedding network training
@@ -92,7 +96,9 @@ def train_timegan(ori_data, mode, args):
             X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
             step_e_loss = model.recovery_forward(X_mb, E0_solver)
             if itt % 100 == 0:
-                print('step: '+ str(itt) + '/' + str(args.iterations) + ', e_loss: ' + str(np.round(np.sqrt(step_e_loss),4)))
+                print('step: '+ str(itt) + '/' + str(args.iterations) +
+                      ', e_loss: ' + str(np.round(np.sqrt(step_e_loss),4)))
+                # Write to Tensorboard
                 with train_summary_writer.as_default():
                     tf.summary.scalar('Embedding_loss', np.round(np.sqrt(step_e_loss),4), step=itt)
 
