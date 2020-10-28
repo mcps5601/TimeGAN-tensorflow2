@@ -6,7 +6,7 @@ from .modules.generator import Generator
 from .modules.supervisor import Supervisor
 from .modules.discriminator import Discriminator
 from .modules.model_utils import extract_time, random_generator, batch_generator, MinMaxScaler
-import logging, os 
+import logging, os , datetime
 logging.disable(logging.WARNING) 
 #os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -80,14 +80,21 @@ def train_timegan(ori_data, mode, args):
 
         recovery_optimizer = tf.keras.optimizers.Adam(epsilon=args.epsilon)
 
+        print('Set up Tensorboard')
+        current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        train_log_dir = os.path.join('../tensorboard', current_time, args.exp_name)
+        train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+
         # 1. Embedding network training
         print('Start Embedding Network Training')
         for itt in range(args.iterations):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
             X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
             step_e_loss = model.recovery_forward(X_mb, E0_solver)
-            if itt % 1000 == 0:
+            if itt % 100 == 0:
                 print('step: '+ str(itt) + '/' + str(args.iterations) + ', e_loss: ' + str(np.round(np.sqrt(step_e_loss),4)))
+                with train_summary_writer.as_default():
+                    tf.summary.scalar('Embedding_loss', np.round(np.sqrt(step_e_loss),4), step=itt)
 
         print('Finish Embedding Network Training')
         # 2. Training only with supervised loss

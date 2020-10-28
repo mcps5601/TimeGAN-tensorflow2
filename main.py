@@ -158,6 +158,10 @@ if __name__ == '__main__':
     # Inputs for the main function
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        '--exp_name',
+        default='timegan-test',
+        type=str)
+    parser.add_argument(
         '--data_name',
         choices=['amsterdam','stock'],
         default='amsterdam',
