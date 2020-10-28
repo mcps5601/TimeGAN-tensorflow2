@@ -282,7 +282,7 @@ def train_timegan(ori_data, mode, args):
 
         # 3. Joint Training
         print('Start Joint Training')
-        for itt in range(1000):
+        for itt in range(1):
             # Generator training (two times as discriminator training)
             for g_more in range(2):
                 X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)

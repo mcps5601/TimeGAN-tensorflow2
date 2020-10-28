@@ -41,11 +41,11 @@ warnings.filterwarnings("ignore")
 from utils import tf2_set_seed
 from hider.timegan.timegan import train_timegan
 # from hider.add_noise import add_noise
-# from seeker.knn.knn_seeker import knn_seeker
-# from seeker.binary_predictor.binary_predictor import binary_predictor
+from seeker.knn_seeker import knn_seeker
+from seeker.binary_predictor import binary_predictor
 from data.data_utils import data_division
 from data.data_preprocess import data_preprocess
-#from metrics.metric_utils import feature_prediction, one_step_ahead_prediction, reidentify_score
+from metrics.metric_utils import feature_prediction, one_step_ahead_prediction, reidentify_score
 
 
 def main(args):
