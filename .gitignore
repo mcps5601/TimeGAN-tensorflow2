@@ -130,3 +130,7 @@ dmypy.json
 
 # vscode
 .vscode
+
+# this repo
+tensorboard
+hider/timegan/test.py
