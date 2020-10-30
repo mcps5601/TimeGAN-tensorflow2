@@ -1,7 +1,5 @@
 import tensorflow as tf
-import numpy as np
 from .model_utils import rnn_cell
-
 
 class Generator(tf.keras.Model):
     def __init__(self, args):
@@ -15,11 +13,11 @@ class Generator(tf.keras.Model):
         self.rnn = tf.keras.layers.RNN(self.rnn_cells, 
                                        return_sequences=True,
                                        stateful=False, 
-                                       return_state=True)
+                                       return_state=False)
         
         self.linear = tf.keras.layers.Dense(self.hidden_dim, activation=tf.nn.sigmoid)
 
     def call(self, Z, training=False):
         e_output = self.rnn(Z)
-        E = self.linear(e_output[0])
+        E = self.linear(e_output)
         return E
