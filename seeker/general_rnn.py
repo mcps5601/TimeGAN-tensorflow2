@@ -191,7 +191,6 @@ class GeneralRNN():
                                validation_data=(valid_x, valid_y), 
                                callbacks=[save_best], verbose=False)
 
-      #best_file = os.path.join(tmpdir, sorted(os.listdir(tmpdir), reverse=True)[0])
       self.predictor_model.load_weights(save_file_name)
 
     return self.predictor_model
