@@ -241,7 +241,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--iterations',
-        default=6000,
+        default=4500,
         type=int)
 
     args = parser.parse_args()

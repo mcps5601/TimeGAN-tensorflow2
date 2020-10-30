@@ -248,8 +248,8 @@ def train_timegan(ori_data, mode, args):
 
         # 1. Embedding network training
         print('Start Embedding Network Training')
-        #for itt in range(args.iterations//3):
-        for itt in range(1):
+        for itt in range(args.iterations//3):
+        #for itt in range(1):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
             X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
             step_e_loss = model.recovery_forward(X_mb, optimizer)
@@ -261,11 +261,11 @@ def train_timegan(ori_data, mode, args):
                     tf.summary.scalar('Embedding_loss', np.round(np.sqrt(step_e_loss),4), step=itt)
 
         print('Finish Embedding Network Training')
-
+        exit()
         # 2. Training only with supervised loss
         print('Start Training with Supervised Loss Only')
-        #for itt in range(args.iterations//2):
-        for itt in range(1):
+        for itt in range(args.iterations//2):
+        #for itt in range(1):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
             Z_mb = random_generator(args.batch_size, args.z_dim, T_mb, args.max_seq_len)
 
@@ -284,8 +284,8 @@ def train_timegan(ori_data, mode, args):
 
         # 3. Joint Training
         print('Start Joint Training')
-        #for itt in range(args.iterations):
-        for itt in range(1):
+        for itt in range(args.iterations):
+        #for itt in range(1):
             # Generator training (two times as discriminator training)
             for g_more in range(2):
                 X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)

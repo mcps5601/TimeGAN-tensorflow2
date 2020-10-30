@@ -98,7 +98,7 @@ def random_generator(batch_size, z_dim, T_mb, max_seq_len):
     return Z_mb
 
 
-def batch_generator(data, time, batch_size):
+def batch_generator(data, time, batch_size, use_tf_data=False):
     """Mini-batch generator
     Args:
         data: time-series data
@@ -113,6 +113,10 @@ def batch_generator(data, time, batch_size):
     train_idx = idx[:batch_size]
     X_mb = list(data[i] for i in train_idx)
     T_mb = list(time[i] for i in train_idx)
+    
+    if use_tf_data:
+        X_mb = tf.data.Dataset.from_tensor_slices(X_mb)
+        T_mb = tf.data.Dataset.from_tensor_slices(T_mb)
 
     return X_mb, T_mb
 
