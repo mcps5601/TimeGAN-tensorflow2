@@ -168,7 +168,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='dpsgd-test',
+        default='timegan-test',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -241,7 +241,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--iterations',
-        default=1000,
+        default=6000,
         type=int)
 
     args = parser.parse_args()

@@ -178,7 +178,7 @@ class GeneralRNN():
     self.predictor_model = self._build_model(train_x, train_y)
 
     with tempfile.TemporaryDirectory() as tmpdir:
-      save_file_name = os.path.join(tmpdir, 'model.ckpt')
+      save_file_name = os.path.join(tmpdir, 'model.h5')
 
       # Callback for the best model saving
       save_best = ModelCheckpoint(save_file_name, monitor='val_loss',
@@ -191,6 +191,7 @@ class GeneralRNN():
                                validation_data=(valid_x, valid_y), 
                                callbacks=[save_best], verbose=False)
 
+      #best_file = os.path.join(tmpdir, sorted(os.listdir(tmpdir), reverse=True)[0])
       self.predictor_model.load_weights(save_file_name)
 
     return self.predictor_model

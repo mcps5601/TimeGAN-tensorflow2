@@ -248,12 +248,13 @@ def train_timegan(ori_data, mode, args):
 
         # 1. Embedding network training
         print('Start Embedding Network Training')
+        #for itt in range(args.iterations//3):
         for itt in range(1):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
             X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
             step_e_loss = model.recovery_forward(X_mb, optimizer)
-            if itt % 10 == 0:
-                print('step: '+ str(itt) + '/' + str(args.iterations) +
+            if itt % 100 == 0:
+                print('step: '+ str(itt) + '/' + str(args.iterations//3) +
                       ', e_loss: ' + str(np.round(np.sqrt(step_e_loss),4)))
                 # Write to Tensorboard
                 with train_summary_writer.as_default():
@@ -263,6 +264,7 @@ def train_timegan(ori_data, mode, args):
 
         # 2. Training only with supervised loss
         print('Start Training with Supervised Loss Only')
+        #for itt in range(args.iterations//2):
         for itt in range(1):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
             Z_mb = random_generator(args.batch_size, args.z_dim, T_mb, args.max_seq_len)
@@ -271,8 +273,8 @@ def train_timegan(ori_data, mode, args):
             Z_mb = tf.convert_to_tensor(Z_mb, dtype=tf.float32)
 
             step_g_loss_s = model.supervisor_forward(X_mb, Z_mb, optimizer)
-            if itt % 10 == 0:
-                print('step: '+ str(itt)  + '/' + str(args.iterations) +', s_loss: '
+            if itt % 100 == 0:
+                print('step: '+ str(itt)  + '/' + str(args.iterations//2) +', s_loss: '
                               + str(np.round(np.sqrt(step_g_loss_s),4)))
                 # Write to Tensorboard
                 with train_summary_writer.as_default():
@@ -282,6 +284,7 @@ def train_timegan(ori_data, mode, args):
 
         # 3. Joint Training
         print('Start Joint Training')
+        #for itt in range(args.iterations):
         for itt in range(1):
             # Generator training (two times as discriminator training)
             for g_more in range(2):
@@ -310,7 +313,7 @@ def train_timegan(ori_data, mode, args):
             else:
                 step_d_loss = check_d_loss
 
-            if itt % 100 ==0:
+            if itt % 100 == 0:
                 print('step: '+ str(itt) + '/' + str(args.iterations) + 
                       ', d_loss: ' + str(np.round(step_d_loss, 4)) + 
                       ', g_loss_u: ' + str(np.round(step_g_loss_u, 4)) + 
