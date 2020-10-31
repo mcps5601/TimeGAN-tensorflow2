@@ -10,11 +10,13 @@ class Embedder(tf.keras.Model):
 
         self.pre_rnn_cells = [rnn_cell(self.module_name, self.hidden_dim) for _ in range(self.num_layers)]
         self.rnn_cells = tf.keras.layers.StackedRNNCells(self.pre_rnn_cells)
-        self.rnn = tf.keras.layers.RNN(self.rnn_cells,
-                                       return_sequences=True,
-                                       stateful=False, 
-                                       return_state=False)
-        
+        # self.rnn = tf.keras.layers.RNN(self.rnn_cells,
+        #                                return_sequences=True,
+        #                                stateful=False, 
+        #                                return_state=False)
+        self.rnn = tf.keras.Sequential([
+            tf.keras.layers.GRU(self.hidden_dim, return_sequences=True) for _ in range(self.num_layers)
+        ])
         self.linear = tf.keras.layers.Dense(self.hidden_dim, activation=tf.nn.sigmoid)
 
     def call(self, X, training=False):

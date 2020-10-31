@@ -124,7 +124,8 @@ def main(args):
 
     ## Evaluate the performance
     # 1. Feature prediction
-    feat_idx = np.random.permutation(train_data.shape[2])[:args.feature_prediction_no]
+    #feat_idx = np.random.permutation(train_data.shape[2])[:args.feature_prediction_no]
+    feat_idx = [0, 7]
     ori_feat_pred_perf = feature_prediction(train_data, test_data, feat_idx)
     new_feat_pred_perf = feature_prediction(generated_data, test_data, feat_idx)
 
@@ -168,7 +169,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timegan-test',
+        default='rnn-test',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -181,7 +182,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--train_rate',
-        default=0.8,
+        default=0.5,
         type=float)
     parser.add_argument(
         '--feature_prediction_no',
@@ -241,7 +242,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--iterations',
-        default=4500,
+        default=3000,
         type=int)
 
     args = parser.parse_args()

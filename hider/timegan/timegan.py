@@ -7,8 +7,8 @@ from .modules.generator import Generator
 from .modules.supervisor import Supervisor
 from .modules.discriminator import Discriminator
 from .modules.model_utils import extract_time, random_generator, batch_generator, MinMaxScaler
-import logging, os , datetime
-logging.disable(logging.WARNING) 
+import logging, os , datetime, time
+#logging.disable(logging.WARNING) 
 
 
 class TimeGAN(tf.keras.Model):
@@ -248,6 +248,7 @@ def train_timegan(ori_data, mode, args):
 
         # 1. Embedding network training
         print('Start Embedding Network Training')
+        start = time.time()
         for itt in range(args.iterations//3):
         #for itt in range(1):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
@@ -261,7 +262,10 @@ def train_timegan(ori_data, mode, args):
                     tf.summary.scalar('Embedding_loss', np.round(np.sqrt(step_e_loss),4), step=itt)
 
         print('Finish Embedding Network Training')
+        end = time.time()
+        print('Train embedding time elapsed: {}'.format(end-start))
         exit()
+
         # 2. Training only with supervised loss
         print('Start Training with Supervised Loss Only')
         for itt in range(args.iterations//2):
