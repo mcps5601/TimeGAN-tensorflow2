@@ -121,7 +121,7 @@ class TimeGAN(tf.keras.Model):
             return D_loss
 
     # E_solver
-    def embedding_forward_joint(self, X, optimizer):
+    def embedding_forward_joint(self, X, optimizer, eta):
         with tf.GradientTape() as tape:
             H = self.embedder(X, training=True)
             X_tilde = self.recovery(H, training=True)
@@ -134,7 +134,7 @@ class TimeGAN(tf.keras.Model):
             G_loss_S = tf.math.reduce_mean(
                 self.mse(H[:, 1:, :], H_hat_supervise[:, :-1, :])
             )
-            E_loss = E_loss0 + 0.1 * G_loss_S
+            E_loss = E_loss0 + eta * G_loss_S
         
         var_list = self.embedder.trainable_weights + self.recovery.trainable_weights
         grads = tape.gradient(E_loss, var_list)
@@ -307,7 +307,7 @@ def train_timegan(ori_data, mode, args):
                                                                                   optimizer,
                                                                                   train_G=True,
                                                                                   train_D=False)
-                step_e_loss_t0 = model.embedding_forward_joint(X_mb, optimizer)
+                step_e_loss_t0 = model.embedding_forward_joint(X_mb, optimizer, args.eta)
 
             # Discriminator training
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)

@@ -177,7 +177,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timegan',
+        default='timegan-eta10',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -259,6 +259,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--joint_iterations',
         default=6000,
+        type=int)
+    parser.add_argument(
+        '--eta',
+        default=10,
         type=int)
 
     args = parser.parse_args()
