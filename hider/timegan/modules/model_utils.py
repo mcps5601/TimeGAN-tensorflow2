@@ -141,8 +141,10 @@ def batch_generator(data, time, batch_size, use_tf_data=False):
     T_mb = list(time[i] for i in train_idx)
     
     if use_tf_data:
-        X_mb = tf.data.Dataset.from_tensor_slices(X_mb)
-        T_mb = tf.data.Dataset.from_tensor_slices(T_mb)
+        X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
+        T_mb = tf.convert_to_tensor(T_mb, dtype=tf.float32)
+        X_mb = tf.data.Dataset.from_tensors(X_mb)
+        T_mb = tf.data.Dataset.from_tensors(T_mb)
 
     return X_mb, T_mb
 

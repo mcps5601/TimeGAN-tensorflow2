@@ -249,13 +249,13 @@ def train_timegan(ori_data, mode, args):
         # 1. Embedding network training
         print('Start Embedding Network Training')
         start = time.time()
-        for itt in range(args.iterations//3):
+        for itt in range(args.embedding_iterations):
         #for itt in range(1):
-            X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
+            X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size, use_tf_data=False)
             X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
             step_e_loss = model.recovery_forward(X_mb, optimizer)
             if itt % 100 == 0:
-                print('step: '+ str(itt) + '/' + str(args.iterations//3) +
+                print('step: '+ str(itt) + '/' + str(args.embedding_iterations) +
                       ', e_loss: ' + str(np.round(np.sqrt(step_e_loss),4)))
                 # Write to Tensorboard
                 with train_summary_writer.as_default():
@@ -263,11 +263,12 @@ def train_timegan(ori_data, mode, args):
 
         print('Finish Embedding Network Training')
         end = time.time()
-        print('Train embedding time elapsed: {}'.format(end-start))
+        print('Train embedding time elapsed: {} sec'.format(end-start))
 
         # 2. Training only with supervised loss
         print('Start Training with Supervised Loss Only')
-        for itt in range(args.iterations//2):
+        start = time.time()
+        for itt in range(args.supervised_iterations):
         #for itt in range(1):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
             Z_mb = random_generator(args.batch_size, args.z_dim, T_mb, args.max_seq_len)
@@ -277,17 +278,20 @@ def train_timegan(ori_data, mode, args):
 
             step_g_loss_s = model.supervisor_forward(X_mb, Z_mb, optimizer)
             if itt % 100 == 0:
-                print('step: '+ str(itt)  + '/' + str(args.iterations//2) +', s_loss: '
+                print('step: '+ str(itt)  + '/' + str(args.supervised_iterations) +', s_loss: '
                               + str(np.round(np.sqrt(step_g_loss_s),4)))
                 # Write to Tensorboard
                 with train_summary_writer.as_default():
                     tf.summary.scalar('Supervised_loss', np.round(np.sqrt(step_g_loss_s),4), step=itt)
         
         print('Finish Training with Supervised Loss Only')
+        end = time.time()
+        print('Train Supervisor time elapsed: {} sec'.format(end-start))
 
         # 3. Joint Training
         print('Start Joint Training')
-        for itt in range(args.iterations):
+        start = time.time()
+        for itt in range(args.joint_iterations):
         #for itt in range(1):
             # Generator training (two times as discriminator training)
             for g_more in range(2):
@@ -317,7 +321,7 @@ def train_timegan(ori_data, mode, args):
                 step_d_loss = check_d_loss
 
             if itt % 100 == 0:
-                print('step: '+ str(itt) + '/' + str(args.iterations) + 
+                print('step: '+ str(itt) + '/' + str(args.joint_iterations) + 
                       ', d_loss: ' + str(np.round(step_d_loss, 4)) + 
                       ', g_loss_u: ' + str(np.round(step_g_loss_u, 4)) + 
                       ', g_loss_s: ' + str(np.round(np.sqrt(step_g_loss_s), 4)) + 
@@ -336,6 +340,9 @@ def train_timegan(ori_data, mode, args):
                     tf.summary.scalar('Joint/Embedding',
                                       np.round(step_e_loss_t0, 4), step=itt)        
         print('Finish Joint Training')
+        end = time.time()
+        print('Train jointly time elapsed: {} sec'.format(end-start))
+
     
         ## Synthetic data generation
         Z_mb = random_generator(no, args.z_dim, ori_time, args.max_seq_len)

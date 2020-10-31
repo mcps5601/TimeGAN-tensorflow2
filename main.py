@@ -30,7 +30,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os, joblib
+import os, joblib, time
 import argparse
 import numpy as np
 import tensorflow as tf
@@ -67,7 +67,7 @@ def main(args):
     """
     # Set random seeds
     tf2_set_seed(args.seed)
-    
+
     ## Load & preprocess data
     if args.data_name == 'amsterdam':
         if os.path.exists('data/amsterdam/amsterdam-bin.jlb'):
@@ -99,12 +99,14 @@ def main(args):
     #     tf.config.experimental.set_memory_growth(gpu, True)
 
     ## Run hider algorithm
+    hider_start = time.time()
     if args.hider_model == 'timegan':
         generated_data = train_timegan(train_data, 'train', args)
     elif args.hider_model == 'add_noise':
         generated_data = add_noise.add_noise(train_data, args.noise_size)  
 
     print('Finish hider algorithm (' + args.hider_model  + ') training')  
+    hider_end = time.time()
 
     ## Define enlarge data and its labels
     enlarge_data = np.concatenate((train_data, test_data), axis = 0)
@@ -116,13 +118,18 @@ def main(args):
     enlarge_data_label = enlarge_data_label[idx]
 
     ## Run seeker algorithm
+    seeker_start = time.time()
     if args.seeker_model == 'binary_predictor':
         reidentified_data = binary_predictor(generated_data, enlarge_data)  
     elif args.seeker_model == 'knn':
         reidentified_data = knn_seeker(generated_data, enlarge_data)
 
-    print('Finish seeker algorithm (' + args.seeker_model  + ') training')  
+    print('Finish seeker algorithm (' + args.seeker_model  + ') training')
+    seeker_end = time.time()
 
+    print('Hider needs {} sec'.format(hider_end - hider_start))
+    print('Seeker needs {} sec'.format(seeker_end - seeker_start))
+    
     ## Evaluate the performance
     # 1. Feature prediction
     #feat_idx = np.random.permutation(train_data.shape[2])[:args.feature_prediction_no]
@@ -170,7 +177,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='rnn-test',
+        default='timagan',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -242,8 +249,16 @@ if __name__ == '__main__':
         default=3,
         type=int)
     parser.add_argument(
-        '--iterations',
-        default=3000,
+        '--embedding_iterations',
+        default=1000,
+        type=int)
+    parser.add_argument(
+        '--supervised_iterations',
+        default=2000,
+        type=int)
+    parser.add_argument(
+        '--joint_iterations',
+        default=6000,
         type=int)
 
     args = parser.parse_args()
