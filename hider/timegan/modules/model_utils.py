@@ -78,6 +78,29 @@ def rnn_cell(module_name, hidden_dim):
     return rnn_cell
 
 
+def rnn_choices(module_name, hidden_dim):
+    """
+    Args:
+        module_name: desired rnn module
+        hidden_dim: dimension of hidden states
+    Return:
+        rnn_cell
+    """
+    if module_name == 'gru':
+        rnn_model = tf.keras.layers.GRU(
+                    units=hidden_dim,
+                    activation='tanh')
+    if module_name == 'lstm':
+        rnn_model = tf.keras.layers.LSTM(
+                    units=hidden_dim,
+                    activation='tanh')
+    if module_name == 'lstmln':
+        rnn_model = lstmLNCell(
+                    units=hidden_dim,
+                    activation='tanh')
+    return rnn_model
+
+
 def random_generator(batch_size, z_dim, T_mb, max_seq_len):
     """Random vector generation.
     Args:
