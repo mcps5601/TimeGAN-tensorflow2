@@ -6,7 +6,7 @@ from .modules.recovery import Recovery
 from .modules.generator import Generator
 from .modules.supervisor import Supervisor
 from .modules.discriminator import Discriminator
-from .modules.model_utils import extract_time, random_generator, batch_generator, MinMaxScaler
+from .modules.model_utils import extract_time, random_generator, batch_generator, MinMaxScaler, save_dict_to_json
 import logging, os , datetime, time
 #logging.disable(logging.WARNING) 
 
@@ -245,6 +245,8 @@ def train_timegan(ori_data, mode, args):
         current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         train_log_dir = os.path.join('tensorboard', current_time + '-' + args.exp_name)
         train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+        # save args to tensorboard folder
+        save_dict_to_json(args.__dict__, os.path.join(train_log_dir, 'params.json'))
 
         # 1. Embedding network training
         print('Start Embedding Network Training')

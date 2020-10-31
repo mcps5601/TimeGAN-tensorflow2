@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from .layer_norm_module import LSTMLNCell
+import json
 
 
 def train_test_divide(data_x, data_x_hat, data_t, data_t_hat, train_rate = 0.8):
@@ -165,3 +166,18 @@ def MinMaxScaler(data):
     norm_data = data / (max_val + 1e-7)
 
     return norm_data, min_val, max_val
+
+
+def save_dict_to_json(dict_of_params, json_path):
+    """Saves dict of floats in json file
+    Args:
+        d: (dict) of float-castable values (np.float, int, float, etc.)
+        json_path: (string) path to json file
+    Return:
+        a saved json file containing hyperparameters
+    """
+
+    with open(json_path, 'w') as f:
+        # We need to convert the values to float for json (it doesn't accept np.array, np.float, )
+        dict_of_params = {k: v for k, v in dict_of_params.items()}
+        json.dump(dict_of_params, f, indent=4)

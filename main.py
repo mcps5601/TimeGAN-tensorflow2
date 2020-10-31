@@ -177,7 +177,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timagan',
+        default='timegan',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -250,11 +250,11 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--embedding_iterations',
-        default=1000,
+        default=2000,
         type=int)
     parser.add_argument(
         '--supervised_iterations',
-        default=2000,
+        default=500,
         type=int)
     parser.add_argument(
         '--joint_iterations',
