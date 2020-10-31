@@ -1,5 +1,4 @@
 import tensorflow as tf
-import tensorflow.compat.v1 as tf1
 import numpy as np
 from .modules.embedder import Embedder
 from .modules.recovery import Recovery
