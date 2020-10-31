@@ -15,3 +15,11 @@ class LSTMLNCell(tf.keras.layers.Layer):
         norm_outputs = self.activation(self.layer_norm(outputs))
 
         return norm_outputs, [norm_outputs]
+
+
+class LSTMLN(tf.keras.Model):
+    def __init__(self, units, activation='tanh'):
+        super().__init__()
+        self.lstmlncell = LSTMLNCell(units, activation)
+
+    def call()

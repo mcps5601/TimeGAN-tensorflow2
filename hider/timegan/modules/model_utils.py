@@ -89,15 +89,18 @@ def rnn_choices(module_name, hidden_dim):
     if module_name == 'gru':
         rnn_model = tf.keras.layers.GRU(
                     units=hidden_dim,
-                    activation='tanh')
+                    activation='tanh',
+                    return_sequences=True)
     if module_name == 'lstm':
         rnn_model = tf.keras.layers.LSTM(
                     units=hidden_dim,
-                    activation='tanh')
-    if module_name == 'lstmln':
+                    activation='tanh',
+                    return_sequences=True)
+    if module_name == 'lstmln': # TODO
         rnn_model = lstmLNCell(
                     units=hidden_dim,
-                    activation='tanh')
+                    activation='tanh',
+                    return_sequences=True)
     return rnn_model
 
 
