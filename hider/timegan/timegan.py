@@ -41,11 +41,11 @@ class TimeGAN(tf.keras.Model):
     def supervisor_forward(self, X, Z, optimizer):
         with tf.GradientTape() as tape:
             H = self.embedder(X, training=True)
-            H_hat = self.generator(Z, training=True)
+            #H_hat = self.generator(Z, training=True)
             H_hat_supervise = self.supervisor(H, training=True)
             G_loss_S = self.mse(H[:, 1:, :], H_hat_supervise[:, :-1, :])
         
-        var_list = self.generator.trainable_weights + self.supervisor.trainable_weights
+        var_list = self.supervisor.trainable_weights
         grads = tape.gradient(G_loss_S, var_list)
         optimizer.apply_gradients(zip(grads, var_list))
 
