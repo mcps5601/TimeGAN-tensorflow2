@@ -65,7 +65,9 @@ def main(args):
     - step_ahead_pred: step ahead prediction results (original & new)
     - reidentification_score: reidentification score between hider and seeker
     """
-
+    # Set random seeds
+    tf2_set_seed(args.seed)
+    
     ## Load & preprocess data
     if args.data_name == 'amsterdam':
         if os.path.exists('data/amsterdam/amsterdam-bin.jlb'):
@@ -90,7 +92,6 @@ def main(args):
 
     # For CuDNN bug
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    tf2_set_seed(args.seed)
     # gpus = tf.config.experimental.list_physical_devices('GPU')
     # print(gpus)
     # for gpu in gpus:
@@ -190,7 +191,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--seed',
-        default=42,
+        default=0,
         type=int)
     parser.add_argument(
         '--hider_model',

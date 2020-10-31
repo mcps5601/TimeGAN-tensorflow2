@@ -264,7 +264,6 @@ def train_timegan(ori_data, mode, args):
         print('Finish Embedding Network Training')
         end = time.time()
         print('Train embedding time elapsed: {}'.format(end-start))
-        exit()
 
         # 2. Training only with supervised loss
         print('Start Training with Supervised Loss Only')

@@ -15,7 +15,7 @@ class Embedder(tf.keras.Model):
         #                                stateful=False, 
         #                                return_state=False)
         self.rnn = tf.keras.Sequential([
-            rnn_choices(self.hidden_dim, ) for _ in range(self.num_layers)
+            rnn_choices(self.module_name, self.hidden_dim) for _ in range(self.num_layers)
         ])
         self.linear = tf.keras.layers.Dense(self.hidden_dim, activation=tf.nn.sigmoid)
 
