@@ -17,9 +17,11 @@ class LSTMLNCell(tf.keras.layers.Layer):
         return norm_outputs, [norm_outputs]
 
 
-# class LSTMLN(tf.keras.Model):
-#     def __init__(self, units, activation='tanh'):
-#         super().__init__()
-#         self.lstmlncell = LSTMLNCell(units, activation)
+class LSTMLN(tf.keras.Model):
+    def __init__(self, units, activation='tanh', return_sequence=False):
+        super().__init__()
+        self.lstmlncell = LSTMLNCell(units, activation)
+        self.rnn_layer = tf.keras.RNN(self.lstmlncell, return_sequence)
 
-#     def call()
+    def call(inputs):
+        return self.rnn_layer(inputs)

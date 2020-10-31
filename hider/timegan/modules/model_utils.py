@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from .layer_norm_module import LSTMLNCell
+from .layer_norm_module import LSTMLNCell, LSTMLN
 import json
 
 
@@ -97,8 +97,8 @@ def rnn_choices(module_name, hidden_dim):
                     units=hidden_dim,
                     activation='tanh',
                     return_sequences=True)
-    if module_name == 'lstmln': # TODO
-        rnn_model = lstmLNCell(
+    if module_name == 'lstmln': # TODO: there may be bugs
+        rnn_model = LSTMLN(
                     units=hidden_dim,
                     activation='tanh',
                     return_sequences=True)
