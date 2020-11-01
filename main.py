@@ -30,7 +30,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os, joblib, time
+import os, joblib, time, pickle
 import argparse
 import numpy as np
 import tensorflow as tf
@@ -101,12 +101,20 @@ def main(args):
     ## Run hider algorithm
     hider_start = time.time()
     if args.hider_model == 'timegan':
-        generated_data = train_timegan(train_data, 'train', args)
+        generated_data, train_log_dir = train_timegan(train_data, 'train', args)
     elif args.hider_model == 'add_noise':
         generated_data = add_noise.add_noise(train_data, args.noise_size)  
 
     print('Finish hider algorithm (' + args.hider_model  + ') training')  
     hider_end = time.time()
+
+    # Save the train and generated data for visualization
+    with open(os.path.join(train_log_dir, "ori.pickle"), "wb") as fb:
+        pickle.dump(train_data, fb)
+    with open(os.path.join(train_log_dir, "test.pickle"), "wb") as fb:
+        pickle.dump(test_data, fb)
+    with open(os.path.join(train_log_dir, "new.pickle"), "wb") as fb:
+        pickle.dump(generated_data, fb)
 
     ## Define enlarge data and its labels
     enlarge_data = np.concatenate((train_data, test_data), axis = 0)
@@ -177,7 +185,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timegan-eta10',
+        default='timegan-eta10-h20',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -242,7 +250,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--hidden_dim',
-        default=10,
+        default=20,
         type=int)
     parser.add_argument(
         '--num_layers',

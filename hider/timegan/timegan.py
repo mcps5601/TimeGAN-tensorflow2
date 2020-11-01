@@ -350,4 +350,4 @@ def train_timegan(ori_data, mode, args):
         Z_mb = tf.convert_to_tensor(Z_mb, dtype=tf.float32)
         generated_data = model.generate(Z_mb, no, ori_time, max_val, min_val)
         
-        return generated_data
+        return generated_data, train_log_dir
