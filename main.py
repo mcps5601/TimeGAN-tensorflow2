@@ -185,7 +185,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timegan-eta10-h20',
+        default='timegan',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -250,7 +250,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--hidden_dim',
-        default=20,
+        default=10,
         type=int)
     parser.add_argument(
         '--num_layers',
@@ -270,7 +270,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--eta',
-        default=10,
+        default=0.1,
         type=int)
 
     args = parser.parse_args()

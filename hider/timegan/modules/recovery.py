@@ -18,7 +18,7 @@ class Recovery(tf.keras.Model):
         self.rnn = tf.keras.Sequential([
             rnn_choices(self.module_name, self.hidden_dim) for _ in range(self.num_layers)
         ])
-        self.linear = tf.keras.layers.Dense(self.feature_dim, activation=tf.nn.sigmoid)
+        self.linear = tf.keras.layers.Dense(self.feature_dim, activation=None)
 
     def call(self, H, training=False):
         r_output = self.rnn(H)
