@@ -18,7 +18,7 @@ import numpy as np
 import tempfile
 from datetime import datetime
 from tensorflow.keras import layers
-from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 
 def binary_cross_entropy_loss (y_true, y_pred):
@@ -101,7 +101,7 @@ class GeneralRNN():
       - learning_rate: the learning rate of model training
   """
 
-  def __init__(self, model_parameters):
+  def __init__(self, model_parameters, tensorboard_dir):
 
     self.task = model_parameters['task']
     self.model_type = model_parameters['model_type']
@@ -110,7 +110,8 @@ class GeneralRNN():
     self.batch_size = model_parameters['batch_size']
     self.epoch = model_parameters['epoch']
     self.learning_rate = model_parameters['learning_rate']
-    
+    self.tensorboard_dir = tensorboard_dir
+
     assert self.model_type in ['rnn', 'lstm', 'gru']
 
     # Predictor model define
@@ -184,24 +185,26 @@ class GeneralRNN():
       save_best = ModelCheckpoint(save_file_name, monitor='val_loss',
                                   mode='min', verbose=False,
                                   save_best_only=True)
+      # Callback for Tensorboard
+      tensorboard_callback = TensorBoard(log_dir=os.path.join(self.tensorboard_dir, 'seeker'), profile_batch=0)
 
       # Train the model
-      self.predictor_model.fit(train_x, train_y, 
-                               batch_size=self.batch_size, epochs=self.epoch, 
-                               validation_data=(valid_x, valid_y), 
-                               callbacks=[save_best], verbose=False)
+      self.predictor_model.fit(train_x, train_y,
+                               batch_size=self.batch_size, epochs=self.epoch,
+                               validation_data=(valid_x, valid_y),
+                               callbacks=[save_best, tensorboard_callback], verbose=True)
 
       self.predictor_model.load_weights(save_file_name)
 
     return self.predictor_model
-  
-  
+
+
   def predict(self, test_x):
     """Return the temporal and feature importance.
-    
+
     Args:
       - test_x: testing features
-      
+
     Returns:
       - test_y_hat: predictions on testing set
     """

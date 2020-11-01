@@ -21,7 +21,6 @@ Note: Make binary predictor that predict synthetic data from original enlarged d
 # Necessary packages
 import numpy as np
 import sys
-import tensorflow as tf
 from .general_rnn import GeneralRNN
 
 
@@ -57,12 +56,9 @@ def binary_predictor (generated_data, enlarge_data, tensorboard_dir):
   train_x = train_x[idx, :, :]
   train_y = train_y[idx, :]
 
-  # Set up callback
-  tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=tensorboard_dir)
-
   # Train the binary predictor
-  general_rnn = GeneralRNN(model_parameters)
-  general_rnn.fit(train_x, train_y, callbacks=[tensorboard_callback], verbose=1)
+  general_rnn = GeneralRNN(model_parameters, tensorboard_dir)
+  general_rnn.fit(train_x, train_y)
 
   # Measure the distance from synthetic data using the trained model
   distance = general_rnn.predict(enlarge_data)
