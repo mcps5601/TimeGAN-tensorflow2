@@ -61,7 +61,7 @@ def main(args):
     - noise_size: size of the noise for add_noise hider
 
     Returns:
-    - feat_pred: feature prediction results (original & new) 
+    - feat_pred: feature prediction results (original & new)
     - step_ahead_pred: step ahead prediction results (original & new)
     - reidentification_score: reidentification score between hider and seeker
     """
@@ -88,7 +88,7 @@ def main(args):
     train_data = np.asarray(divided_data[0])
     test_data = np.asarray(divided_data[1])
 
-    print('Finish data loading: ' + str(args.data_name))  
+    print('Finish data loading: ' + str(args.data_name))
 
     # For CuDNN bug
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -103,9 +103,9 @@ def main(args):
     if args.hider_model == 'timegan':
         generated_data, train_log_dir = train_timegan(train_data, 'train', args)
     elif args.hider_model == 'add_noise':
-        generated_data = add_noise.add_noise(train_data, args.noise_size)  
+        generated_data = add_noise.add_noise(train_data, args.noise_size)
 
-    print('Finish hider algorithm (' + args.hider_model  + ') training')  
+    print('Finish hider algorithm (' + args.hider_model  + ') training')
     hider_end = time.time()
 
     # Save the train and generated data for visualization
@@ -128,7 +128,7 @@ def main(args):
     ## Run seeker algorithm
     seeker_start = time.time()
     if args.seeker_model == 'binary_predictor':
-        reidentified_data = binary_predictor(generated_data, enlarge_data)  
+        reidentified_data = binary_predictor(generated_data, enlarge_data, train_log_dir)
     elif args.seeker_model == 'knn':
         reidentified_data = knn_seeker(generated_data, enlarge_data)
 
@@ -137,7 +137,7 @@ def main(args):
 
     print('Hider needs {} sec'.format(hider_end - hider_start))
     print('Seeker needs {} sec'.format(seeker_end - seeker_start))
-    
+
     ## Evaluate the performance
     # 1. Feature prediction
     #feat_idx = np.random.permutation(train_data.shape[2])[:args.feature_prediction_no]
@@ -147,8 +147,8 @@ def main(args):
 
     feat_pred = [ori_feat_pred_perf, new_feat_pred_perf]
 
-    print('Feature prediction results: ' + 
-            '(1) Ori: ' + str(np.round(ori_feat_pred_perf, 4)) + 
+    print('Feature prediction results: ' +
+            '(1) Ori: ' + str(np.round(ori_feat_pred_perf, 4)) +
             '(2) New: ' + str(np.round(new_feat_pred_perf, 4)))
 
     # 2. One step ahead prediction
@@ -270,7 +270,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--eta',
-        default=0.1,
+        default=10,
         type=int)
 
     args = parser.parse_args()

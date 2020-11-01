@@ -316,17 +316,17 @@ def train_timegan(ori_data, mode, args):
             Z_mb = tf.convert_to_tensor(Z_mb, dtype=tf.float32)
 
             check_d_loss = model.adversarial_forward(X_mb, Z_mb, train_G=False, train_D=False)
-            if (check_d_loss > 0.15): 
+            if (check_d_loss > 0.15):
                 step_d_loss = model.adversarial_forward(X_mb, Z_mb, D_optimizer, train_G=False, train_D=True)
             else:
                 step_d_loss = check_d_loss
 
             if itt % 100 == 0:
-                print('step: '+ str(itt) + '/' + str(args.joint_iterations) + 
-                      ', d_loss: ' + str(np.round(step_d_loss, 4)) + 
-                      ', g_loss_u: ' + str(np.round(step_g_loss_u, 4)) + 
-                      ', g_loss_s: ' + str(np.round(np.sqrt(step_g_loss_s), 4)) + 
-                      ', g_loss_v: ' + str(np.round(step_g_loss_v, 4)) + 
+                print('step: '+ str(itt) + '/' + str(args.joint_iterations) +
+                      ', d_loss: ' + str(np.round(step_d_loss, 4)) +
+                      ', g_loss_u: ' + str(np.round(step_g_loss_u, 4)) +
+                      ', g_loss_s: ' + str(np.round(np.sqrt(step_g_loss_s), 4)) +
+                      ', g_loss_v: ' + str(np.round(step_g_loss_v, 4)) +
                       ', e_loss_t0: ' + str(np.round(np.sqrt(step_e_loss_t0), 4)))
                 # Write to Tensorboard
                 with train_summary_writer.as_default():
@@ -339,15 +339,15 @@ def train_timegan(ori_data, mode, args):
                     tf.summary.scalar('Joint/Moments',
                                       np.round(step_g_loss_v, 4), step=itt)
                     tf.summary.scalar('Joint/Embedding',
-                                      np.round(step_e_loss_t0, 4), step=itt)        
+                                      np.round(step_e_loss_t0, 4), step=itt)
         print('Finish Joint Training')
         end = time.time()
         print('Train jointly time elapsed: {} sec'.format(end-start))
 
-    
+
         ## Synthetic data generation
         Z_mb = random_generator(no, args.z_dim, ori_time, args.max_seq_len)
         Z_mb = tf.convert_to_tensor(Z_mb, dtype=tf.float32)
         generated_data = model.generate(Z_mb, no, ori_time, max_val, min_val)
-        
+
         return generated_data, train_log_dir

@@ -21,25 +21,25 @@ Note: Make binary predictor that predict synthetic data from original enlarged d
 # Necessary packages
 import numpy as np
 import sys
-
+import tensorflow as tf
 from .general_rnn import GeneralRNN
 
 
-def binary_predictor (generated_data, enlarge_data):
+def binary_predictor (generated_data, enlarge_data, tensorboard_dir):
   """Find top gen_no enlarge data whose predicted scores is largest using the trained predictor.
-  
+
   Args:
     - generated_data: generated data points
     - enlarge_data: train data + remaining data
-    
+
   Returns:
     - reidentified_data: 1 if it is used as train data, 0 otherwise
   """
-  
+
   # Parameters
   enl_no, seq_len, dim = enlarge_data.shape
   gen_no, _, _ = generated_data.shape
-  
+
   # Set model parameters
   model_parameters = {'task': 'classification',
                       'model_type': 'gru',
@@ -48,22 +48,25 @@ def binary_predictor (generated_data, enlarge_data):
                       'batch_size': 128,
                       'epoch': 20,
                       'learning_rate': 0.001}
-  
+
   # Set training features and labels
   train_x = np.concatenate((generated_data.copy(), enlarge_data.copy()), axis = 0)
   train_y = np.concatenate((np.zeros([gen_no, 1]), np.ones([enl_no, 1])), axis = 0)
-  
+
   idx = np.random.permutation(enl_no+gen_no)
   train_x = train_x[idx, :, :]
   train_y = train_y[idx, :]
-    
+
+  # Set up callback
+  tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=tensorboard_dir)
+
   # Train the binary predictor
-  general_rnn = GeneralRNN(model_parameters)    
-  general_rnn.fit(train_x, train_y)
-  
+  general_rnn = GeneralRNN(model_parameters)
+  general_rnn.fit(train_x, train_y, callbacks=[tensorboard_callback], verbose=1)
+
   # Measure the distance from synthetic data using the trained model
   distance = general_rnn.predict(enlarge_data)
-      
+
   # Check the threshold distance for top gen_no for 1-NN distance
   thresh = sorted(distance)[gen_no]
 
