@@ -110,11 +110,6 @@ class TimeGAN(tf.keras.Model):
                 H_hat = self.supervisor(E_hat)
                 X_hat = self.recovery(H_hat)
 
-                # # Discriminator
-                # Y_fake = self.discriminator(H_hat, training=True)
-                # Y_real = self.discriminator(H, training=True)
-                # Y_fake_e = self.discriminator(E_hat, training=True)
-
                 def loss_fn():
                     # Discriminator forward
                     Y_fake = self.discriminator(H_hat, training=True)
@@ -292,8 +287,8 @@ def train_timegan(ori_data, mode, args):
         # 1. Embedding network training
         print('Start Embedding Network Training')
         start = time.time()
-        #for itt in range(args.embedding_iterations):
-        for itt in range(1):
+        for itt in range(args.embedding_iterations):
+        #for itt in range(1):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size, use_tf_data=False)
             X_mb = tf.convert_to_tensor(X_mb, dtype=tf.float32)
             step_e_loss = model.recovery_forward(X_mb, optimizer)
@@ -311,8 +306,8 @@ def train_timegan(ori_data, mode, args):
         # 2. Training only with supervised loss
         print('Start Training with Supervised Loss Only')
         start = time.time()
-        #for itt in range(args.supervised_iterations):
-        for itt in range(1):
+        for itt in range(args.supervised_iterations):
+        #for itt in range(1):
             X_mb, T_mb = batch_generator(ori_data, ori_time, args.batch_size)
             Z_mb = random_generator(args.batch_size, args.z_dim, T_mb, args.max_seq_len)
 
