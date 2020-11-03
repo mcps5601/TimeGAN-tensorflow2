@@ -133,7 +133,6 @@ class TimeGAN(tf.keras.Model):
             optimizer.apply_gradients(D_grads)
 
         else:
-            # optimizer: Adam
             H = self.embedder(X)
             E_hat = self.generator(Z)
 

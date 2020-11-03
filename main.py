@@ -242,7 +242,7 @@ if __name__ == '__main__':
         type=str)
     parser.add_argument(
         '--use_dpsgd',
-        default=True,
+        default=False,
         type=str2bool)
     parser.add_argument(
         '--batch_size',
