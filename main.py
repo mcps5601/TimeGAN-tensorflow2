@@ -40,6 +40,7 @@ warnings.filterwarnings("ignore")
 
 from utils import tf2_set_seed
 from hider.timegan.timegan import train_timegan
+from hider.timegan import dp_timegan
 # from hider.add_noise import add_noise
 from seeker.knn_seeker import knn_seeker
 from seeker.binary_predictor import binary_predictor
@@ -101,7 +102,10 @@ def main(args):
     ## Run hider algorithm
     hider_start = time.time()
     if args.hider_model == 'timegan':
-        generated_data, train_log_dir = train_timegan(train_data, 'train', args)
+        if args.use_dpsgd:
+            generated_data, train_log_dir = dp_timegan.train_timegan(train_data, 'train', args)
+        else:
+            generated_data, train_log_dir = train_timegan(train_data, 'train', args)
     elif args.hider_model == 'add_noise':
         generated_data = add_noise.add_noise(train_data, args.noise_size)
 
@@ -185,7 +189,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timegan-eta10',
+        default='timegan-dptest',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -238,7 +242,7 @@ if __name__ == '__main__':
         type=str)
     parser.add_argument(
         '--use_dpsgd',
-        default=False,
+        default=True,
         type=str2bool)
     parser.add_argument(
         '--batch_size',
@@ -270,8 +274,21 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--eta',
-        default=10,
+        default=100,
         type=int)
+    ##### DP params #####
+    parser.add_argument(
+        '--l2_norm_clip',
+        default=1.0,
+        type=float)
+    parser.add_argument(
+        '--noise_multiplier',
+        default=0.1,
+        type=float)
+    parser.add_argument(
+        '--dp_lr',
+        default=0.15,
+        type=float)
 
     args = parser.parse_args()
 
