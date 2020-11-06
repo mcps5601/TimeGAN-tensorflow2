@@ -189,7 +189,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timegan-dptest',
+        default='test',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -227,6 +227,11 @@ if __name__ == '__main__':
         default='binary_predictor',
         type=str)
     ##### hider params #####
+    parser.add_argument(
+        '--gen_type',
+        choices=['gan', 'autoencoder'],
+        default='autoencoder',
+        type=str)
     parser.add_argument(
         '--module_name',
         choices=['gru','lstm', 'lstmLN'],
@@ -274,7 +279,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--eta',
-        default=100,
+        default=0.1,
         type=int)
     ##### DP params #####
     parser.add_argument(
