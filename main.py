@@ -189,12 +189,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='test',
+        default='timegan-stock',
         type=str)
     parser.add_argument(
         '--data_name',
         choices=['amsterdam','stock'],
-        default='amsterdam',
+        default='stock',
         type=str)
     parser.add_argument(
         '--max_seq_len',
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--gen_type',
         choices=['gan', 'autoencoder'],
-        default='autoencoder',
+        default='gan',
         type=str)
     parser.add_argument(
         '--module_name',
