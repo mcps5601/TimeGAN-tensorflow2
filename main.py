@@ -47,7 +47,7 @@ from seeker.binary_predictor import binary_predictor
 from data.data_utils import data_division
 from data.data_preprocess import data_preprocess
 from metrics.metric_utils import feature_prediction, one_step_ahead_prediction, reidentify_score
-
+from sklearn.metrics import confusion_matrix
 
 def main(args):
     """Hide-and-Seek Privacy Challenge main function.
@@ -71,11 +71,16 @@ def main(args):
 
     ## Load & preprocess data
     if args.data_name == 'amsterdam':
-        if os.path.exists('data/amsterdam/amsterdam-bin.jlb'):
-            ori_data = joblib.load('data/amsterdam/amsterdam-bin.jlb')
-        else:
-            file_name = 'data/amsterdam/train_longitudinal_data.csv'
+        if args.use_gain:
+            print("Using GAIN-imputed data")
+            file_name = '/data/nips_hns/hide-and-seek/data/GAIN/amsterdam.csv'
             ori_data = data_preprocess(file_name, args.max_seq_len)
+        else:
+            if os.path.exists('data/amsterdam/amsterdam-bin.jlb'):
+                ori_data = joblib.load('data/amsterdam/amsterdam-bin.jlb')
+            else:
+                file_name = 'data/amsterdam/train_longitudinal_data.csv'
+                ori_data = data_preprocess(file_name, args.max_seq_len)
 
     elif args.data_name == 'stock':
         with open('data/public_data/public_' + args.data_name + '_data.txt', 'rb') as fp:
@@ -144,8 +149,8 @@ def main(args):
 
     ## Evaluate the performance
     # 1. Feature prediction
-    #feat_idx = np.random.permutation(train_data.shape[2])[:args.feature_prediction_no]
-    feat_idx = [0, 7]
+    feat_idx = np.random.permutation(train_data.shape[2])[:args.feature_prediction_no]
+    #feat_idx = [69, 70]
     ori_feat_pred_perf = feature_prediction(train_data, test_data, feat_idx)
     new_feat_pred_perf = feature_prediction(generated_data, test_data, feat_idx)
 
@@ -167,7 +172,7 @@ def main(args):
 
     # 3. Reidentification score
     reidentification_score = reidentify_score(enlarge_data_label, reidentified_data)
-
+    confusion_matrix(enlarge_data_label, reidentified_data)
     print('Reidentification score: ' + str(np.round(reidentification_score, 4)))
 
     return feat_pred, step_ahead_pred, reidentification_score
@@ -189,13 +194,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timegan-stock',
+        default='ae_zero_imp_10',
         type=str)
     parser.add_argument(
         '--data_name',
         choices=['amsterdam','stock'],
-        default='stock',
+        default='amsterdam',
         type=str)
+    parser.add_argument(
+        '--use_gain',
+        default=False,
+        type=str2bool)
     parser.add_argument(
         '--max_seq_len',
         default=100,
@@ -206,7 +215,7 @@ if __name__ == '__main__':
         type=float)
     parser.add_argument(
         '--feature_prediction_no',
-        default=2,
+        default=10,
         type=int)
     parser.add_argument(
         '--seed',
@@ -230,7 +239,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--gen_type',
         choices=['gan', 'autoencoder'],
-        default='gan',
+        default='autoencoder',
         type=str)
     parser.add_argument(
         '--module_name',

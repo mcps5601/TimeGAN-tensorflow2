@@ -92,6 +92,7 @@ def imputation(curr_data, median_vals):
   # Forward fill  
   imputed_data = imputed_data.ffill(axis = 'rows')
   # Median fill
-  imputed_data = imputed_data.fillna(median_vals)
+  #imputed_data = imputed_data.fillna(median_vals)
+  imputed_data = imputed_data.fillna(0)
 
   return imputed_data
