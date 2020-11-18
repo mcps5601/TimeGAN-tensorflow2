@@ -39,7 +39,7 @@ import pickle
 import warnings
 warnings.filterwarnings("ignore")
 
-from utils import tf2_set_seed, in_progress
+from utils import tf2_set_seed, in_progress, tf_set_log_level
 from hider.timegan.timegan import train_timegan
 from hider.timegan import dp_timegan
 # from hider.add_noise import add_noise
