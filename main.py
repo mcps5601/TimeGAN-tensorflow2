@@ -7,7 +7,8 @@ Neural Information Processing Systems (NeurIPS) Competition, 2020.
 Link: https://www.vanderschaar-lab.com/announcing-the-neurips-2020-hide-and-seek-privacy-challenge/
 
 Last updated Date: June 21th 2020
-Code author: Jinsung Yoon
+Code author: Jinsung Yoon, Evgeny Saveliev
+Modified by Ying-Jia Lin
 Contact: jsyoon0823@gmail.com
 
 -----------------------------
@@ -30,7 +31,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os, joblib, time, pickle
+import os, joblib, time, pickle, shutil
 import argparse
 import numpy as np
 import tensorflow as tf
@@ -38,7 +39,7 @@ import pickle
 import warnings
 warnings.filterwarnings("ignore")
 
-from utils import tf2_set_seed
+from utils import tf2_set_seed, in_progress
 from hider.timegan.timegan import train_timegan
 from hider.timegan import dp_timegan
 # from hider.add_noise import add_noise
