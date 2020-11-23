@@ -9,7 +9,6 @@ Link: https://www.vanderschaar-lab.com/announcing-the-neurips-2020-hide-and-seek
 Last updated Date: June 21th 2020
 Code author: Jinsung Yoon, Evgeny Saveliev
 Modified by Ying-Jia Lin
-Contact: jsyoon0823@gmail.com
 
 -----------------------------
 
@@ -81,7 +80,7 @@ def main(args):
                 ori_data = joblib.load('data/amsterdam/amsterdam-bin.jlb')
             else:
                 file_name = 'data/amsterdam/train_longitudinal_data.csv'
-                ori_data = data_preprocess(file_name, args.max_seq_len)
+                ori_data = data_preprocess(file_name, args.max_seq_len, args.imp_method)
 
     elif args.data_name == 'stock':
         with open('data/public_data/public_' + args.data_name + '_data.txt', 'rb') as fp:
@@ -150,8 +149,8 @@ def main(args):
 
     ## Evaluate the performance
     # 1. Feature prediction
-    feat_idx = np.random.permutation(train_data.shape[2])[:args.feature_prediction_no]
-    #feat_idx = [69, 70]
+    #feat_idx = np.random.permutation(train_data.shape[2])[:args.feature_prediction_no]
+    feat_idx = [55, 61, 63, 64, 65]
     ori_feat_pred_perf = feature_prediction(train_data, test_data, feat_idx)
     new_feat_pred_perf = feature_prediction(generated_data, test_data, feat_idx)
 
@@ -195,7 +194,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='ae_zero_imp_10',
+        default='ae_test',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -211,12 +210,16 @@ if __name__ == '__main__':
         default=100,
         type=int)
     parser.add_argument(
+        '--imp_method',
+        default='',
+        type=str)
+    parser.add_argument(
         '--train_rate',
         default=0.5,
         type=float)
     parser.add_argument(
         '--feature_prediction_no',
-        default=10,
+        default=5,
         type=int)
     parser.add_argument(
         '--seed',

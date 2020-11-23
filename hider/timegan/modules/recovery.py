@@ -8,6 +8,7 @@ class Recovery(tf.keras.Model):
         self.hidden_dim = args.hidden_dim
         self.feature_dim = args.feature_dim
         self.num_layers = args.num_layers
+        self.max_seq_len = args.max_seq_len
 
         # self.pre_rnn_cells = [rnn_cell(args.module_name, self.hidden_dim) for _ in range(self.num_layers)]
         # self.rnn_cells = tf.keras.layers.StackedRNNCells(self.pre_rnn_cells)
@@ -16,7 +17,8 @@ class Recovery(tf.keras.Model):
         #                                stateful=False,
         #                                return_state=False)
         self.rnn = tf.keras.Sequential([
-            rnn_choices(self.module_name, self.hidden_dim) for _ in range(self.num_layers)
+            tf.keras.layers.Masking(mask_value=-1., input_shape=(self.max_seq_len, self.hidden_dim)),
+            *[rnn_choices(self.module_name, self.hidden_dim) for _ in range(self.num_layers)]
         ])
         self.linear = tf.keras.layers.Dense(self.feature_dim, activation=None)
 
