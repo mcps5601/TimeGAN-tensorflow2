@@ -136,4 +136,4 @@ tensorboard
 hider/timegan/test.py
 submission*
 data/amsterdam
-data/public
+data/public_data
