@@ -134,6 +134,6 @@ dmypy.json
 # this repo
 tensorboard
 hider/timegan/test.py
-submission
+submission*
 data/amsterdam
 data/public
