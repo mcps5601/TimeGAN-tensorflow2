@@ -194,12 +194,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='ae_test',
+        default='timegan',
         type=str)
     parser.add_argument(
         '--data_name',
         choices=['amsterdam','stock'],
-        default='amsterdam',
+        default='stock',
         type=str)
     parser.add_argument(
         '--use_gain',
