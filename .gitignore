@@ -137,3 +137,4 @@ hider/timegan/test.py
 submission*
 data/amsterdam
 data/public_data
+*.ipynb
