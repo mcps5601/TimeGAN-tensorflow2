@@ -199,7 +199,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--data_name',
         choices=['amsterdam','stock'],
-        default='stock',
+        default='amsterdam',
         type=str)
     parser.add_argument(
         '--use_gain',

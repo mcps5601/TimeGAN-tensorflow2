@@ -19,7 +19,6 @@ class TimeGAN(tf.keras.Model):
         self.supervisor = Supervisor(args)
         self.discriminator = Discriminator(args)
         self.mse = tf.keras.losses.MeanSquaredError()
-        self.use_dpsgd = args.use_dpsgd
 
     # E0_solver
     def recovery_forward(self, X, optimizer):
@@ -280,19 +279,6 @@ def train_timegan(ori_data, mode, args):
         # Set up optimizers
         if args.optimizer == 'adam':
             optimizer = tf.keras.optimizers.Adam(epsilon=args.epsilon)
-        if args.use_dpsgd:
-            from tensorflow_privacy.privacy.analysis.rdp_accountant import compute_rdp
-            from tensorflow_privacy.privacy.analysis.rdp_accountant import get_privacy_spent
-            from tensorflow_privacy.privacy.optimizers.dp_optimizer import DPGradientDescentGaussianOptimizer
-
-            D_optimizer = DPGradientDescentGaussianOptimizer(
-                l2_norm_clip=1.0,
-                noise_multiplier=0.1,
-                num_microbatches=args.batch_size,
-                learning_rate=0.15
-            )
-        else:
-            D_optimizer = optimizer
 
         print('Set up Tensorboard')
         current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -376,7 +362,7 @@ def train_timegan(ori_data, mode, args):
 
                 check_d_loss = model.discriminator_forward(X_mb, Z_mb, train_D=False)
                 if (check_d_loss > 0.15):
-                    step_d_loss = model.discriminator_forward(X_mb, Z_mb, D_optimizer, train_D=True)
+                    step_d_loss = model.discriminator_forward(X_mb, Z_mb, optimizer, train_D=True)
                 else:
                     step_d_loss = check_d_loss
 
