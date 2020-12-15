@@ -80,7 +80,7 @@ def main(args):
                 ori_data = joblib.load('data/amsterdam/amsterdam-bin.jlb')
             else:
                 file_name = 'data/amsterdam/train_longitudinal_data.csv'
-                ori_data = data_preprocess(file_name, args.max_seq_len, args.imp_method)
+                ori_data, dynamic_time = data_preprocess(file_name, args.max_seq_len, args.imp_method)
 
     elif args.data_name == 'stock':
         with open('data/public_data/public_' + args.data_name + '_data.txt', 'rb') as fp:
@@ -89,10 +89,13 @@ def main(args):
 
     # Divide the data into training and testing
     divided_data, _ = data_division(ori_data, seed = args.seed, divide_rates = [args.train_rate, 1-args.train_rate])
+    divided_time, _ = data_division(dynamic_time, seed = args.seed, divide_rates = [args.train_rate, 1-args.train_rate])
     args.feature_dim = ori_data.shape[-1]
 
     train_data = np.asarray(divided_data[0])
     test_data = np.asarray(divided_data[1])
+    train_time = np.asarray(divided_time[0])
+    test_time = np.asarray(divided_time[1])
 
     print('Finish data loading: ' + str(args.data_name))
 
@@ -110,7 +113,7 @@ def main(args):
         if args.use_dpsgd:
             generated_data, train_log_dir = dp_timegan.train_timegan(train_data, 'train', args)
         else:
-            generated_data, train_log_dir = train_timegan(train_data, 'train', args)
+            generated_data, train_log_dir = train_timegan(train_data, train_time, args)
     elif args.hider_model == 'add_noise':
         generated_data = add_noise.add_noise(train_data, args.noise_size)
 
@@ -211,7 +214,7 @@ if __name__ == '__main__':
         type=int)
     parser.add_argument(
         '--imp_method',
-        default='',
+        default='median',
         type=str)
     parser.add_argument(
         '--train_rate',

@@ -61,6 +61,7 @@ def data_preprocess(file_name, max_seq_len, imp_method):
 
     # Output initialization
     processed_data = -np.ones([no, max_seq_len, dim])
+    time = []
 
     # For each uniq id
     for i in tqdm(range(no)):
@@ -81,10 +82,12 @@ def data_preprocess(file_name, max_seq_len, imp_method):
         curr_no = len(curr_data)
         if curr_no >= max_seq_len:
             processed_data[i, :, :] = curr_data[:max_seq_len, 1:]
+            time.append(max_seq_len)
         else:
             processed_data[i, -curr_no:, :] = (curr_data)[:, 1:]
+            time.append(curr_no)
 
-    return processed_data
+    return processed_data, time
 
 
 def imputation(curr_data, vals):
