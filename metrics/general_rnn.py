@@ -18,7 +18,7 @@ import numpy as np
 import tempfile
 from datetime import datetime
 from tensorflow.keras import layers
-from keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint
 
 
 def binary_cross_entropy_loss (y_true, y_pred):

@@ -197,7 +197,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--exp_name',
-        default='timegan',
+        default='timegan_test',
         type=str)
     parser.add_argument(
         '--data_name',
@@ -246,7 +246,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--gen_type',
         choices=['gan', 'autoencoder'],
-        default='autoencoder',
+        default='gan',
         type=str)
     parser.add_argument(
         '--module_name',
